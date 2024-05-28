@@ -8,7 +8,7 @@ const MeteoStyle = StyleSheet.create({
         paddingTop: 5,
     },
 
-    temp : {
+    tempChart : {
         textAlign: 'center',
         color: 'white',
         padding: 2,
@@ -17,7 +17,7 @@ const MeteoStyle = StyleSheet.create({
         marginTop: 2,
     },
 
-    pluie : {
+    pluieChart : {
         textAlign: 'center',
         color: 'white',
         padding: 2,
@@ -26,7 +26,7 @@ const MeteoStyle = StyleSheet.create({
         marginTop: 2,
     },
 
-    pression : {
+    pressionChart : {
         textAlign: 'center',
         color: 'white',
         padding: 2,
