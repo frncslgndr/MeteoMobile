@@ -1,40 +1,26 @@
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import DetailsScreen from "../Screens/Home/DetailsScreen";
 import ProfileScreen from "../Screens/Profile/ProfileScreen";
+import TodoScreen from "../Screens/Todo/TodoScreen";
 
 const Stack = createNativeStackNavigator();
 
 
-export default function ProfileNavigator() {
+export default function TodoNavigator() {
     return (
         <Stack.Navigator>
             <Stack.Screen
-                name="Mon Profile"
-                component={ProfileScreen}
+                name="list"
+                component={TodoScreen}
                 options={{
-                    title: 'Profile',
+                    title: 'La liste',
                     headerStyle: {
-                        backgroundColor: '#f41e1e',
+                        backgroundColor: '#8d1ef4',
                     },
                     headerTintColor: '#fff',
                     headerTitleStyle: {
                         fontWeight: 'bold',
                     }}}
-            />
-            <Stack.Screen
-                name="DetailPage"
-                component={DetailsScreen}
-                options={{
-                    title: 'Home Sweet Swwet home',
-                    headerStyle: {
-                        backgroundColor: '#1e82f4',
-                    },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                    }}}
-
-
             />
         </Stack.Navigator>
     )
