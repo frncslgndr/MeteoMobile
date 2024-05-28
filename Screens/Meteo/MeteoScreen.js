@@ -8,41 +8,28 @@ import {InfoClimatRequest} from "../../Api/InfoClimatRequest";
 export default function MeteoScreen( { route }) {
     const city = route.params?.city;
 
-    const [weather, setWeather] = useState([0]);
-    const [times, setTimes] = useState([0]);
-    const [temperatures, setTemperatures] = useState([]);
+    const [weather, setWeather] = useState([]);
 
     async function fetchWeather() {
-        const infoClimat = new InfoClimatRequest();
+        const infoClimat = new InfoClimatRequest(city.lat+','+city.lon);
         await infoClimat.send(setWeather);
-    }
-
-    const updateTimes = () => {
-        const _times = weather.map(w => w[0])
-        setTimes(_times);
-    }
-
-    const updateTemperatures = () => {
-        const temps = weather.map(w => w[1].temperature['2m'])
-        setTemperatures(temps);
     }
 
     useEffect(() => {
         fetchWeather();
-        updateTimes();
-        updateTemperatures();
     }, []);
 
     return (
         <SafeAreaView style={MeteoStyle.container}>
-        <ScrollView style={MeteoStyle.vue}>
+        <ScrollView>
 
             {/*<-- TEMPERATURES -->*/}
             <Text style={MeteoStyle.temp} >Températures</Text>
+            { weather.length > 0 &&
             <LineChart
                 data={{
-                    labels: times,
-                    datasets: [{data: temperatures}],
+                    labels: weather.map(w => w[0]),
+                    datasets: [{data: weather.map(w => w[1].temperature['2m'])}],
                 }}
                 height={220}
                 width={Dimensions.get("window").width - 20} // from react-native
@@ -71,7 +58,7 @@ export default function MeteoScreen( { route }) {
                     marginBottom: 12,
                     borderRadius: 16
                 }}
-            />
+            /> }
 
 
             {/*<-- PRECIPITATIONS -->*/}

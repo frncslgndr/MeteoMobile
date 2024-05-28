@@ -29,7 +29,6 @@ export class InfoClimatRequest {
                         formattedData.push(a);
                     }
                 }
-                console.log(formattedData)
                 onSuccess(formattedData);
             })
             .catch(error => {
