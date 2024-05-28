@@ -1,6 +1,7 @@
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
-import DetailsScreen from "../Screens/Home/DetailsScreen";
+
 import ProfileScreen from "../Screens/Profile/ProfileScreen";
+
 
 const Stack = createNativeStackNavigator();
 

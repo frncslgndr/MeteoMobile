@@ -1,39 +1,38 @@
-import * as React from 'react';
+import {useEffect, useState} from 'react';
 import {Button, View, Text, Image, Dimensions, ScrollView, SafeAreaView} from 'react-native';
 import MeteoStyle from "./MeteoStyle";
 import {LineChart} from "react-native-chart-kit";
+import {InfoClimatRequest} from "../../Api/InfoClimatRequest";
 
 
-const response = {
-    labels: [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June"
-    ],
-    temp: [
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100
-    ],
-    pressure: [
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100,
-        Math.random() * 100
-    ]
-}
+export default function MeteoScreen( { route }) {
+    const city = route.params?.city;
 
+    const [weather, setWeather] = useState([0]);
+    const [times, setTimes] = useState([0]);
+    const [temperatures, setTemperatures] = useState([]);
 
-export default function MeteoScreen() {
-    console.log(response)
+    async function fetchWeather() {
+        const infoClimat = new InfoClimatRequest();
+        await infoClimat.send(setWeather);
+    }
+
+    const updateTimes = () => {
+        const _times = weather.map(w => w[0])
+        setTimes(_times);
+    }
+
+    const updateTemperatures = () => {
+        const temps = weather.map(w => w[1].temperature['2m'])
+        setTemperatures(temps);
+    }
+
+    useEffect(() => {
+        fetchWeather();
+        updateTimes();
+        updateTemperatures();
+    }, []);
+
     return (
         <SafeAreaView style={MeteoStyle.container}>
         <ScrollView style={MeteoStyle.vue}>
@@ -42,8 +41,8 @@ export default function MeteoScreen() {
             <Text style={MeteoStyle.temp} >Températures</Text>
             <LineChart
                 data={{
-                    labels: response.labels,
-                    datasets: [{data: response.temp}],
+                    labels: times,
+                    datasets: [{data: temperatures}],
                 }}
                 height={220}
                 width={Dimensions.get("window").width - 20} // from react-native
