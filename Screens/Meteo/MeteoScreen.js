@@ -4,20 +4,43 @@ import MeteoStyle from "./MeteoStyle";
 import {LineChart} from "react-native-chart-kit";
 import {InfoClimatRequest} from "../../Api/InfoClimatRequest";
 import CustomMeteoGraph from "./CustomMeteoGraph";
+import {AsyncStorageManager} from "../../Utils/AsyncStorageManager";
+
 
 
 export default function MeteoScreen( { route }) {
     const city = route.params?.city;
 
     const [weather, setWeather] = useState([]);
+    const[isFavorite, setIsFavorite] = useState(false);
 
     async function fetchWeather() {
         const infoClimat = new InfoClimatRequest(city.lat+','+city.lon);
         await infoClimat.send(setWeather);
     }
 
+    const storeCity = async () => {
+        try {
+            AsyncStorageManager.addStorage('favorites', {'name': city.name, 'lat': city.lat, 'lon': city.lon})
+            AsyncStorageManager.isInStorage('favorites', 'name', city.name, setIsFavorite)
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // const removeCityStorage = async () => {
+    //     try {
+    //         AsyncStorageManager.removeStorage('favorites', {'name': city.name, 'lat': city.lat, 'lon': city.lon})
+    //         AsyncStorageManager.isInStorage('favorites', 'name', city.name, setIsFavorite)
+    //     } catch (error) {
+    //         console.error(error);
+    //     }
+    // };
+
     useEffect(() => {
+        console.log(city)
         fetchWeather();
+        AsyncStorageManager.isInStorage('favorites', 'name', city.name, setIsFavorite)
     }, []);
 
 
@@ -25,6 +48,8 @@ export default function MeteoScreen( { route }) {
     return (
         <SafeAreaView style={MeteoStyle.container}>
         <ScrollView>
+            {/*{ isFavorite && <Button title="REMOVE ME" onPress={ () => { removeCityStorage() }}/>}*/}
+            <Button title="SAVE ME" onPress={ () => { storeCity() }} />
 
 
             {/*<-- TEMPERATURES -->*/}

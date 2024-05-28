@@ -2,6 +2,7 @@ import {Button, Text, View, TextInput} from "react-native";
 import React, { useState, useEffect } from 'react';
 import {GeoRequest} from "../../Api/GeoRequest";
 import * as Location from 'expo-location';
+import {AsyncStorageManager} from "../../Utils/AsyncStorageManager";
 
 
 export default function SearchScreen({ navigation }) {
@@ -11,6 +12,13 @@ export default function SearchScreen({ navigation }) {
 
     const [cityname, setCityname] = useState('');
     const [cities, setCities] = useState([]);
+
+    const [favorites, setFavorites] = useState([]);
+
+    useEffect(() => {
+        AsyncStorageManager.getStorage('favorites', setFavorites)
+    }, []);
+
 
     async function fetchCities() {
         if(cityname.length < 3) {
@@ -35,13 +43,6 @@ export default function SearchScreen({ navigation }) {
         fetchCities();
     }, []);
 
-    let locale = '';
-    if (errorMsg) {
-        locale = errorMsg;
-    } else if (location) {
-        locale = JSON.stringify(location);
-    }
-
     return (
         <View>
             <TextInput placeholder="Nom de votre ville" value={cityname} onChangeText={setCityname} />
@@ -60,9 +61,16 @@ export default function SearchScreen({ navigation }) {
                             }
                     />
                 ))}
-            </View>
 
-            <Text>{locale}</Text>
+                <Text>Favoris</Text>
+                { favorites.length > 0 && favorites.map(f => <Button key={f.name} title={f.name} onPress={
+                    () => { navigation.push('Meteo', {'city': f, 'title': f.name}); }
+                } />)}
+
+
+                <Text>Autre</Text>
+                <Button title="Utiliser ma localisation" onPress={localizeUser} />
+            </View>
 
         </View>
     );
