@@ -1,86 +1,98 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export class AsyncStorageManager {
-    static getStorage(key, onSuccess) {
-        AsyncStorage.getItem(key)
-            .then(value => {
-                onSuccess(JSON.parse(value));
-            })
-            .catch(error => {
-                console.error(error);
-            });
+    static async setItem(key, value) {
+        try {
+            await AsyncStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {
+            throw new Error(`Error setting item ${key}: ${error.message}`);
+        }
     }
 
-    static setStorage(key, value) {
-        AsyncStorage.setItem(key, JSON.stringify(value))
-            .then(() => {
-                console.log(`Stored ${key} successfully`);
-            })
-            .catch(error => {
-                console.error(`Error storing ${key}:`, error);
-            });
+    static async getItem(key) {
+        try {
+            const value = await AsyncStorage.getItem(key);
+            if (value !== null) {
+                return JSON.parse(value);
+            }
+            return null;
+        } catch (error) {
+            throw new Error(`Error getting item ${key}: ${error.message}`);
+        }
     }
 
-    static addStorage(key, value) {
-        AsyncStorage.getItem(key)
-            .then(currentValue => {
-                const updatedValue = JSON.stringify([...JSON.parse(currentValue || '[]'), value]);
-                AsyncStorage.setItem(key, updatedValue)
-                    .then(() => {
-                        console.log(`Added ${value} to ${key} successfully`);
-                    })
-                    .catch(error => {
-                        console.error(`Error adding ${value} to ${key}:`, error);
-                    });
-            })
-            .catch(error => {
-                console.error(`Error getting ${key} value:`, error);
-            });
+    static async removeItem(key) {
+        try {
+            await AsyncStorage.removeItem(key);
+        } catch (error) {
+            throw new Error(`Error removing item ${key}: ${error.message}`);
+        }
     }
 
-    static removeStorage(key, itemKeyToRemove) {
-        AsyncStorage.getItem(key)
-            .then(value => {
-                const data = JSON.parse(value) || {};
-                delete data[itemKeyToRemove];
-                AsyncStorage.setItem(key, JSON.stringify(data))
-                    .then(() => {
-                        console.log(`Removed item with key ${itemKeyToRemove} from ${key}`);
-                    })
-                    .catch(error => {
-                        console.error(`Error removing item with key ${itemKeyToRemove} from ${key}:`, error);
-                    });
-            })
-            .catch(error => {
-                console.error(`Error getting ${key} value:`, error);
-            });
+    static async addToArray(key, element) {
+        try {
+            const existingArray = await AsyncStorageManager.getItem(key);
+            if (existingArray && Array.isArray(existingArray)) {
+                existingArray.push(element);
+                await AsyncStorageManager.setItem(key, existingArray);
+            } else {
+                AsyncStorageManager.setItem(key, [element])
+            }
+        } catch (error) {
+            throw new Error(`Error adding element to array ${key}: ${error.message}`);
+        }
     }
 
-    static isInStorage(key, searchKey, searchValue, callback) {
-        AsyncStorage.getItem(key)
-            .then(value => {
-                const data = JSON.parse(value) || {};
-                const foundItem = Object.entries(data).find(([k, v]) => v[searchKey] === searchValue);
-                callback(foundItem)
-            })
-            .catch(error => {
-                console.error(error);
-            });
-    }
+    static async removeFromArray(key, element) {
+        try {
+            const existingArray = await AsyncStorageManager.getItem(key);
+            if (existingArray && Array.isArray(existingArray)) {
+                if (element.constructor === Object) {
+                    await AsyncStorageManager.setItem(key,
+                        existingArray.filter(item =>
+                            Object.keys(element).every(key => item[key] !== element[key])
+                        )
+                    )
 
-    static searchInStorage(key, searchKey, searchValue, onSuccess, onError) {
-        AsyncStorage.getItem(key)
-            .then(value => {
-                const data = JSON.parse(value) || {};
-                const foundItem = Object.entries(data).find(([k, v]) => v[searchKey] === searchValue);
-                if (foundItem) {
-                    onSuccess(foundItem);
+                    console.log(await AsyncStorageManager.getItem(key))
                 } else {
-                    onError(`No item found with ${searchKey} equal to ${searchValue}`);
+                    await AsyncStorageManager.setItem(key, existingArray.filter(item => JSON.stringify(item) !== JSON.stringify(element)));
                 }
-            })
-            .catch(error => {
-                onError(error);
-            });
+            } else {
+                throw new Error(`Item ${key} does not exist or is not an array`);
+            }
+        } catch (error) {
+            throw new Error(`Error removing element from array ${key}: ${error.message}`);
+        }
+    }
+
+    static async isInArray(key, element, callback=null) {
+        try {
+            const existingArray = await AsyncStorageManager.getItem(key);
+            if (existingArray && Array.isArray(existingArray)) {
+                let test;
+                if (element.constructor === Object) {
+                    test = existingArray.some(item =>
+                        Object.keys(element).every(key => item[key] !== element[key])
+                    )
+                } else {
+                    test = existingArray.some(item => JSON.stringify(item) !== JSON.stringify(element));
+                }
+
+                if (callback !== null) {
+                    callback(test)
+                } else {
+                    return test
+                }
+            } else {
+                if (callback !== null) {
+                    callback(false)
+                } else {
+                    return flase
+                }
+            }
+        } catch (error) {
+            throw new Error(`Error removing element from array ${key}: ${error.message}`);
+        }
     }
 }

@@ -10,37 +10,47 @@ import {AsyncStorageManager} from "../../Utils/AsyncStorageManager";
 
 export default function MeteoScreen( { route }) {
     const city = route.params?.city;
+    const city_light = Object.fromEntries(
+        ["name", "lat", "lon"].map(key => [key, city[key]])
+    );
 
     const [weather, setWeather] = useState([]);
     const[isFavorite, setIsFavorite] = useState(false);
+
+    const addToFavorite = async () => {
+        try {
+            await AsyncStorageManager.addToArray('favorites', city_light);
+            setIsFavorite(true);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const removeToFavorite = async () => {
+        try {
+            await AsyncStorageManager.removeFromArray('favorites', city_light)
+            setIsFavorite(false);
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     async function fetchWeather() {
         const infoClimat = new InfoClimatRequest(city.lat+','+city.lon);
         await infoClimat.send(setWeather);
     }
 
-    const storeCity = async () => {
+    async function checkIsFavorite() {
         try {
-            AsyncStorageManager.addStorage('favorites', {'name': city.name, 'lat': city.lat, 'lon': city.lon})
-            AsyncStorageManager.isInStorage('favorites', 'name', city.name, setIsFavorite)
-        } catch (error) {
-            console.error(error);
+            await AsyncStorageManager.isInArray('favorites', city, setIsFavorite);
+        } catch (e) {
+            console.error(e);
         }
-    };
-
-    // const removeCityStorage = async () => {
-    //     try {
-    //         AsyncStorageManager.removeStorage('favorites', {'name': city.name, 'lat': city.lat, 'lon': city.lon})
-    //         AsyncStorageManager.isInStorage('favorites', 'name', city.name, setIsFavorite)
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // };
+    }
 
     useEffect(() => {
-        console.log(city)
         fetchWeather();
-        AsyncStorageManager.isInStorage('favorites', 'name', city.name, setIsFavorite)
+        checkIsFavorite();
     }, []);
 
 
@@ -48,8 +58,8 @@ export default function MeteoScreen( { route }) {
     return (
         <SafeAreaView style={MeteoStyle.container}>
         <ScrollView>
-            {/*{ isFavorite && <Button title="REMOVE ME" onPress={ () => { removeCityStorage() }}/>}*/}
-            <Button title="SAVE ME" onPress={ () => { storeCity() }} />
+            { (city.name !== undefined) && isFavorite && <Button title="Retirer des favoris" onPress={ () => { removeToFavorite() }}/>}
+            { !isFavorite && <Button title="Ajouter aux favoris" onPress={ () => { addToFavorite() }} /> }
 
 
             {/*<-- TEMPERATURES -->*/}

@@ -16,7 +16,13 @@ export default function SearchScreen({ navigation }) {
     const [favorites, setFavorites] = useState([]);
 
     useEffect(() => {
-        AsyncStorageManager.getStorage('favorites', setFavorites)
+        async function fetchFavorites() {
+            const favorites = await AsyncStorageManager.getItem('favorites');
+            setFavorites(favorites);
+        }
+
+        fetchFavorites();
+
     }, []);
 
 
@@ -48,7 +54,6 @@ export default function SearchScreen({ navigation }) {
             <TextInput placeholder="Nom de votre ville" value={cityname} onChangeText={setCityname} />
 
             <Button title="Rechercher" onPress={fetchCities} />
-            <Button title="Utiliser ma localisation" onPress={localizeUser} />
 
             <View>
                 {cities.length === 0 && <Text>Pas de data</Text>}
@@ -63,9 +68,9 @@ export default function SearchScreen({ navigation }) {
                 ))}
 
                 <Text>Favoris</Text>
-                { favorites.length > 0 && favorites.map(f => <Button key={f.name} title={f.name} onPress={
-                    () => { navigation.push('Meteo', {'city': f, 'title': f.name}); }
-                } />)}
+                { favorites !== null && favorites.length > 0 && favorites.map(
+                    (f) => <Button key={f.name} title={f.name} onPress={ () => { navigation.push('Meteo', {'city': f}) } } />
+                )}
 
 
                 <Text>Autre</Text>
